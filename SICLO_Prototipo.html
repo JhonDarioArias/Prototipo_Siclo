@@ -1,0 +1,1671 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>CICLO — Prototipo Premium Navegable</title>
+  <style>
+    :root{
+      --bg:#F6F7F8;
+      --surface:#FFFFFF;
+      --muted:#F0F2F4;
+      --text:#1F2937;
+      --sub:#6B7280;
+      --line:#E5E7EB;
+      --green:#1B5E20;
+      --green2:#2E7D32;
+      --greenSoft:#E8F5E9;
+      --danger:#E53935;
+      --shadow: 0 10px 30px rgba(17,24,39,.08);
+      --shadow2: 0 6px 18px rgba(17,24,39,.10);
+      --r16:16px;
+      --r20:20px;
+      --r12:12px;
+      --tap: 48px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(27,94,32,.10), transparent 60%),
+                  radial-gradient(1000px 700px at 110% 10%, rgba(46,125,50,.10), transparent 55%),
+                  var(--bg);
+    }
+    a{color:inherit}
+    .appShell{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      padding:18px;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      background:rgba(255,255,255,.70);
+      border:1px solid rgba(229,231,235,.8);
+      border-radius:18px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 6px 18px rgba(17,24,39,.06);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:750;
+      letter-spacing:.2px;
+    }
+    .logo{
+      width:34px;height:34px;border-radius:10px;
+      background: linear-gradient(135deg, var(--green), var(--green2));
+      display:grid;place-items:center;color:#fff;
+      box-shadow: 0 10px 20px rgba(27,94,32,.22);
+      font-size:16px;
+    }
+    .badge{
+      font-size:12px; color:var(--green);
+      background: rgba(27,94,32,.10);
+      border:1px solid rgba(27,94,32,.18);
+      padding:4px 10px;
+      border-radius:999px;
+      font-weight:650;
+    }
+    .roleSwitch{
+      display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    }
+    .pill{
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(229,231,235,.9);
+      background:rgba(255,255,255,.85);
+      cursor:pointer;
+      transition:.15s transform, .15s background;
+      user-select:none;
+    }
+    .pill:hover{transform: translateY(-1px)}
+    .pill.active{
+      border-color: rgba(27,94,32,.35);
+      background: rgba(27,94,32,.10);
+      color: var(--green);
+      font-weight:700;
+    }
+    .hint{
+      font-size:12px; color:var(--sub);
+    }
+
+    /* Layout area */
+    .content{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+    @media (max-width: 1100px){
+      .content{grid-template-columns: 1fr; }
+    }
+
+    /* Left panel (guide) */
+    .guide{
+      background: rgba(255,255,255,.75);
+      border:1px solid rgba(229,231,235,.85);
+      border-radius:18px;
+      padding:14px;
+      box-shadow: 0 6px 18px rgba(17,24,39,.06);
+      backdrop-filter: blur(10px);
+      position:sticky;
+      top:18px;
+    }
+    .guide h3{margin:6px 0 10px 0; font-size:14px}
+    .kpiRow{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .kpi{
+      background:var(--surface);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 10px;
+      box-shadow: 0 2px 10px rgba(17,24,39,.05);
+    }
+    .kpi .t{font-size:12px;color:var(--sub)}
+    .kpi .v{font-size:18px;font-weight:800;margin-top:2px}
+    .list{
+      margin-top:10px;
+      border-top:1px solid var(--line);
+      padding-top:10px;
+      display:flex; flex-direction:column; gap:8px;
+    }
+    .item{
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--surface);
+      cursor:pointer;
+      transition:.15s transform, .15s box-shadow;
+    }
+    .item:hover{transform: translateY(-1px); box-shadow: 0 6px 18px rgba(17,24,39,.08)}
+    .item .title{font-weight:750; font-size:13px}
+    .item .desc{font-size:12px;color:var(--sub); margin-top:2px}
+    .item.active{border-color: rgba(27,94,32,.35); background: rgba(27,94,32,.06)}
+
+    /* Preview area */
+    .stage{display:flex;justify-content:center;}
+
+    /* Phone mock */
+    .phoneWrap{width: 420px;max-width: 100%;}
+    .phone{
+      background: #0B0F14;border-radius: 42px;padding: 14px;
+      box-shadow: 0 30px 80px rgba(17,24,39,.25);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .screen{
+      background: var(--bg);border-radius: 30px;overflow:hidden;
+      min-height: 820px;position:relative;
+    }
+    .statusbar{
+      height: 40px;display:flex;align-items:center;justify-content:space-between;
+      padding: 0 18px;font-size:12px;color:#111827;
+      background: linear-gradient(#ffffff, rgba(255,255,255,.90));
+      border-bottom:1px solid rgba(229,231,235,.8);
+    }
+    .statusicons{display:flex; gap:10px; align-items:center; color:#111827;}
+    .dot{width:6px;height:6px;border-radius:999px;background:#111827;opacity:.9}
+    .bar{width:14px;height:8px;border-radius:3px;border:1.5px solid #111827; position:relative}
+    .bar::after{content:""; position:absolute; right:1px; top:1px; bottom:1px; width:9px; background:#111827; border-radius:2px}
+    .wifi{width:14px;height:10px;border:1.5px solid transparent;border-top-color:#111827;border-radius:999px; transform:translateY(2px)}
+    .wifi::after{content:""; display:block; width:8px;height:6px; margin:2px auto 0; border:1.5px solid transparent;border-top-color:#111827;border-radius:999px}
+    .screenBody{padding:16px 16px 86px 16px;}
+    .hRow{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .title1{font-size:20px; font-weight:850; letter-spacing:.2px}
+    .sub1{font-size:12px; color:var(--sub); margin-top:2px}
+    .iconBtn{
+      width:40px;height:40px;border-radius:14px;
+      border:1px solid rgba(229,231,235,.95);
+      background:rgba(255,255,255,.85);
+      display:grid;place-items:center; cursor:pointer;
+    }
+    .iconBtn:hover{box-shadow: 0 6px 18px rgba(17,24,39,.08)}
+    .card{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(229,231,235,.9);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(17,24,39,.06);
+    }
+    .card.soft{background: rgba(232,245,233,.85);border-color: rgba(27,94,32,.18);}
+    .card.muted{background: rgba(245,245,245,.95)}
+    .sp12{height:12px}.sp16{height:16px}.sp20{height:20px}
+    .btn{
+      height: 48px;border-radius: 14px;border: 1px solid transparent;padding: 0 14px;
+      font-weight: 800;letter-spacing:.2px;cursor:pointer;display:inline-flex;
+      align-items:center;justify-content:center;gap:10px;width:100%;
+      user-select:none;transition:.15s transform, .15s box-shadow, .15s background;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{
+      background: linear-gradient(135deg, var(--green), var(--green2));
+      color:#fff;box-shadow: 0 14px 30px rgba(27,94,32,.22);
+    }
+    .btn.primary:hover{box-shadow: 0 18px 40px rgba(27,94,32,.26)}
+    .btn.secondary{
+      background: rgba(255,255,255,.92);
+      border-color: rgba(27,94,32,.35);
+      color: var(--green);
+    }
+    .btn.ghost{
+      background: rgba(255,255,255,.75);
+      border-color: rgba(229,231,235,.9);
+      color: var(--text);
+    }
+    .row{display:flex; gap:10px; align-items:center}
+    .grow{flex:1}
+    .pillTag{
+      display:inline-flex; align-items:center; gap:8px;padding:6px 10px; border-radius:999px;
+      background: rgba(27,94,32,.10);color: var(--green);
+      border: 1px solid rgba(27,94,32,.18);
+      font-size:12px; font-weight:750;width:max-content;
+    }
+    .numBig{font-size:28px; font-weight:900; color:var(--green); letter-spacing:.2px}
+    .numMid{font-size:18px; font-weight:900}
+    .label{font-size:12px; color:var(--sub)}
+    .mutedText{font-size:12px; color:var(--sub)}
+    .hr{height:1px;background:rgba(229,231,235,.9); margin:12px 0}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .listRow{display:flex; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid rgba(229,231,235,.75)}
+    .listRow:last-child{border-bottom:none}
+    .ok{color:var(--green2); font-weight:800}
+    .bad{color:var(--danger); font-weight:800}
+    .thumb{
+      width:46px;height:46px;border-radius:14px;
+      background: linear-gradient(135deg, rgba(27,94,32,.14), rgba(46,125,50,.14));
+      border:1px solid rgba(27,94,32,.18);
+      display:grid;place-items:center;font-weight:900;color:var(--green);
+    }
+    .qr{
+      width: 220px; height:220px;border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(0,0,0,.04), rgba(0,0,0,.02)),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 6px, transparent 6px 12px),
+        repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 6px, transparent 6px 12px);
+      border:1px solid rgba(229,231,235,.9);
+      box-shadow: 0 10px 24px rgba(17,24,39,.08);
+      margin: 8px auto 10px;position:relative;overflow:hidden;
+    }
+    .qr::after{content:"";position:absolute; inset:16px;border-radius: 12px;border:2px solid rgba(27,94,32,.25);}
+    .bottomNav{
+      position:absolute; left:0; right:0; bottom:0;height:72px;
+      background: rgba(255,255,255,.92);border-top:1px solid rgba(229,231,235,.85);
+      display:flex;align-items:center;justify-content:space-around;padding: 10px 10px;
+      backdrop-filter: blur(10px);
+    }
+    .navBtn{
+      width: 110px;height: 44px;border-radius: 14px;border: 1px solid rgba(229,231,235,.9);
+      background: rgba(255,255,255,.85);cursor:pointer;font-weight:800;font-size:12px;color: var(--sub);
+    }
+    .navBtn.active{border-color: rgba(27,94,32,.35);background: rgba(27,94,32,.10);color: var(--green);}
+
+    /* Commerce tiles */
+    .drawerHeader{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 14px;border-radius: 16px;background: rgba(255,255,255,.92);
+      border:1px solid rgba(229,231,235,.9);box-shadow: 0 6px 18px rgba(17,24,39,.06);
+    }
+    .drawerMenu{display:grid; grid-template-columns: 1fr 1fr;gap:10px; margin-top:12px;}
+    .menuTile{
+      height: 70px;border-radius: 16px;border:1px solid rgba(229,231,235,.9);
+      background: rgba(255,255,255,.92);box-shadow: 0 6px 18px rgba(17,24,39,.06);
+      padding: 12px;cursor:pointer;display:flex; flex-direction:column; justify-content:space-between;
+      transition:.15s transform;
+    }
+    .menuTile:hover{transform: translateY(-1px)}
+    .menuTile .t{font-weight:850; font-size:12px}
+    .menuTile .s{font-size:11px;color:var(--sub)}
+    .menuTile .ico{
+      width:34px;height:34px;border-radius:12px;background: rgba(27,94,32,.10);
+      border:1px solid rgba(27,94,32,.18);display:grid; place-items:center;color: var(--green); font-weight:900;
+    }
+
+    /* Admin web */
+    .webWrap{width: 1100px;max-width: 100%;}
+    .web{
+      background: rgba(255,255,255,.88);border:1px solid rgba(229,231,235,.85);
+      border-radius: 22px;box-shadow: 0 10px 30px rgba(17,24,39,.08);
+      overflow:hidden;display:grid;grid-template-columns: 260px 1fr;min-height: 820px;backdrop-filter: blur(10px);
+    }
+    .sidebar{background: linear-gradient(180deg, rgba(27,94,32,.98), rgba(27,94,32,.92));color:#fff;padding: 18px 16px;}
+    .sideBrand{display:flex; align-items:center; gap:10px; font-weight:900}
+    .sideBrand .logo{width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.18)}
+    .sideNav{margin-top:16px; display:flex; flex-direction:column; gap:8px}
+    .sideLink{
+      padding:10px 12px;border-radius: 14px;cursor:pointer;border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);font-weight:750;font-size:13px;
+    }
+    .sideLink.active{background: rgba(255,255,255,.16);border-color: rgba(255,255,255,.22);}
+    .webMain{padding: 18px 18px 14px 18px; background: linear-gradient(#fff, rgba(255,255,255,.92))}
+    .webTop{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding: 10px 12px;border:1px solid rgba(229,231,235,.85);border-radius: 16px;background: rgba(245,247,248,.85);
+    }
+    .webTop .h{font-size:16px;font-weight:900}
+    .search{
+      flex:1;display:flex; align-items:center; gap:10px;background:#fff;
+      border:1px solid rgba(229,231,235,.9);border-radius: 14px;padding: 10px 12px;max-width: 520px;margin: 0 12px;
+    }
+    .search input{border:none; outline:none; width:100%;font-size:13px;}
+    .webGrid{display:grid; grid-template-columns: repeat(4, 1fr);gap:12px; margin-top:14px;}
+    @media (max-width: 1100px){
+      .web{grid-template-columns: 1fr}
+      .sidebar{display:none}
+      .webGrid{grid-template-columns: repeat(2, 1fr)}
+    }
+    .webCard{
+      border-radius: 18px;border:1px solid rgba(229,231,235,.9);background:#fff;padding: 14px;
+      box-shadow: 0 8px 20px rgba(17,24,39,.06);
+    }
+    .webCard .t{font-size:12px;color:var(--sub)}
+    .webCard .v{font-size:22px;font-weight:950;margin-top:2px}
+    .table{
+      margin-top:12px;border:1px solid rgba(229,231,235,.9);border-radius: 18px;overflow:hidden;background:#fff;
+      box-shadow: 0 10px 24px rgba(17,24,39,.06);
+    }
+    .trow{
+      display:grid;grid-template-columns: 160px 140px 1fr 1fr 110px 160px 120px;
+      gap:10px;padding: 12px 12px;border-bottom:1px solid rgba(229,231,235,.75);
+      font-size:12px;align-items:center;
+    }
+    .trow.head{background: rgba(245,247,248,.95);font-weight:900;color:#374151;}
+    .trow:last-child{border-bottom:none}
+    .chip{
+      display:inline-flex; align-items:center; justify-content:center;padding:4px 10px; border-radius:999px; font-weight:850;
+      font-size:11px; width:max-content;border:1px solid rgba(229,231,235,.9);background: rgba(245,245,245,.9);color:#374151;
+    }
+    .chip.ok{background: rgba(46,125,50,.10); border-color: rgba(46,125,50,.18); color: var(--green2)}
+    .chip.bad{background: rgba(229,57,53,.10); border-color: rgba(229,57,53,.18); color: var(--danger)}
+    .chip.info{background: rgba(27,94,32,.10); border-color: rgba(27,94,32,.18); color: var(--green)}
+    .foot{font-size:12px;color: var(--sub);text-align:center;padding: 6px 0 10px;}
+  </style>
+</head>
+<body>
+  <div class="appShell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">C</div>
+        <div>
+          CICLO <span class="badge">Prototipo Premium</span>
+          <div class="hint">Navegable · 4 roles · Flujos completos · Publicidad y Ledger</div>
+        </div>
+      </div>
+      <div class="roleSwitch" id="roleSwitch"></div>
+    </div>
+
+    <div class="content">
+      <div class="guide">
+        <h3>Mapa rápido</h3>
+        <div class="kpiRow" id="kpis"></div>
+        <div class="list" id="screenList"></div>
+        <div class="sp12"></div>
+        <div class="hint">Tip: Cambia de rol arriba. Admin es panel web; los demás simulan app móvil.</div>
+      </div>
+
+      <div class="stage" id="stage"></div>
+    </div>
+
+    <div class="foot">CICLO · Economía circular con puntos auditables (mock). Hecho para prototipo académico.</div>
+  </div>
+
+<script>
+  const mock = {
+    user: { name:"Jhon", points:3756 },
+    commerce: { name:"Tienda Verde Eco", points:97600, level:"INTERMEDIO" },
+    punto: { name:"Punto Verde Eco", points:2300, todayKg:120 },
+    ratios: { carton:80, plastico:140, vidrio:60 }
+  };
+
+  const Roles = { USER:"Usuario", PUNTO:"Punto Ciclo", COMMERCE:"Comercio", ADMIN:"Administrador" };
+
+  const Screen = {
+    U_LOGIN:"U_LOGIN", U_HOME:"U_HOME", U_QR:"U_QR", U_CATALOGO:"U_CATALOGO",
+    U_PRODUCTO:"U_PRODUCTO", U_CONFIRM:"U_CONFIRM", U_QR_REDEEM:"U_QR_REDEEM",
+    U_HISTORY:"U_HISTORY", U_PROFILE:"U_PROFILE",
+
+    P_LOGIN:"P_LOGIN", P_DASH:"P_DASH", P_SCAN:"P_SCAN", P_VALIDATE:"P_VALIDATE",
+    P_REGISTER:"P_REGISTER", P_CONVERT:"P_CONVERT", P_SUCCESS:"P_SUCCESS",
+    P_HISTORY:"P_HISTORY", P_PROFILE:"P_PROFILE",
+
+    C_LOGIN:"C_LOGIN", C_DASH:"C_DASH", C_SCAN:"C_SCAN", C_VALIDATE:"C_VALIDATE",
+    C_SUCCESS:"C_SUCCESS", C_PRODUCTS:"C_PRODUCTS", C_PRODUCT_NEW:"C_PRODUCT_NEW",
+    C_ADS:"C_ADS", C_AD_NEW:"C_AD_NEW", C_STATS:"C_STATS", C_PROFILE:"C_PROFILE",
+
+    A_LOGIN:"A_LOGIN", A_DASH:"A_DASH", A_USERS:"A_USERS", A_PUNTOS:"A_PUNTOS",
+    A_COMMERCE:"A_COMMERCE", A_LEDGER:"A_LEDGER", A_ADS:"A_ADS", A_SETTINGS:"A_SETTINGS", A_LOGS:"A_LOGS"
+  };
+
+  const screensByRole = {
+    USER: [
+      {id:Screen.U_LOGIN, t:"Login", d:"Acceso usuario"},
+      {id:Screen.U_HOME, t:"Home", d:"Saldo + anuncios + aliados"},
+      {id:Screen.U_QR, t:"Generar QR", d:"Token para Punto Ciclo"},
+      {id:Screen.U_CATALOGO, t:"Catálogo", d:"Recompensas por puntos"},
+      {id:Screen.U_PRODUCTO, t:"Detalle producto", d:"Producto + comercio"},
+      {id:Screen.U_CONFIRM, t:"Confirmar redención", d:"Saldo antes/después"},
+      {id:Screen.U_QR_REDEEM, t:"QR redención", d:"Token para Comercio"},
+      {id:Screen.U_HISTORY, t:"Historial", d:"Reciclaje y canjes"},
+      {id:Screen.U_PROFILE, t:"Perfil", d:"Datos + sesión"}
+    ],
+    PUNTO: [
+      {id:Screen.P_LOGIN, t:"Login", d:"Acceso operador"},
+      {id:Screen.P_DASH, t:"Dashboard", d:"Saldo + métricas"},
+      {id:Screen.P_SCAN, t:"Escanear QR", d:"Lectura usuario"},
+      {id:Screen.P_VALIDATE, t:"Validar usuario", d:"Identidad y saldo"},
+      {id:Screen.P_REGISTER, t:"Registrar reciclaje", d:"Multi-material"},
+      {id:Screen.P_CONVERT, t:"Confirmar conversión", d:"Liquidación detallada"},
+      {id:Screen.P_SUCCESS, t:"Éxito", d:"Transferencia creada"},
+      {id:Screen.P_HISTORY, t:"Historial", d:"Operaciones del día"},
+      {id:Screen.P_PROFILE, t:"Perfil", d:"Datos operador"}
+    ],
+    COMMERCE: [
+      {id:Screen.C_LOGIN, t:"Login", d:"Acceso comercio"},
+      {id:Screen.C_DASH, t:"Dashboard", d:"Saldo + menú"},
+      {id:Screen.C_SCAN, t:"Escanear redención", d:"Lectura QR usuario"},
+      {id:Screen.C_VALIDATE, t:"Validar redención", d:"Saldos y confirmación"},
+      {id:Screen.C_SUCCESS, t:"Entrega confirmada", d:"Débito registrado"},
+      {id:Screen.C_PRODUCTS, t:"Productos", d:"Lista + stock"},
+      {id:Screen.C_PRODUCT_NEW, t:"Crear producto", d:"Alta de recompensa"},
+      {id:Screen.C_ADS, t:"Publicidad", d:"Anuncios y nivel"},
+      {id:Screen.C_AD_NEW, t:"Crear anuncio", d:"Envío a aprobación"},
+      {id:Screen.C_STATS, t:"Estadísticas", d:"Impresiones y canjes"},
+      {id:Screen.C_PROFILE, t:"Perfil", d:"Info comercio"}
+    ],
+    ADMIN: [
+      {id:Screen.A_LOGIN, t:"Login", d:"Acceso admin"},
+      {id:Screen.A_DASH, t:"Dashboard", d:"KPIs globales"},
+      {id:Screen.A_USERS, t:"Usuarios", d:"Gestión y bloqueo"},
+      {id:Screen.A_PUNTOS, t:"Puntos Ciclo", d:"Centros y saldos"},
+      {id:Screen.A_COMMERCE, t:"Comercios", d:"Alianzas y niveles"},
+      {id:Screen.A_LEDGER, t:"Ledger", d:"Transacciones auditables"},
+      {id:Screen.A_ADS, t:"Publicidad", d:"Aprobación y métricas"},
+      {id:Screen.A_SETTINGS, t:"Configuración", d:"Reglas de conversión"},
+      {id:Screen.A_LOGS, t:"Auditoría", d:"Eventos sospechosos"}
+    ]
+  };
+
+  let state = { role:"USER", screen: Screen.U_HOME };
+
+  const fmt = (n)=> new Intl.NumberFormat("es-CO").format(n);
+  const money = (n)=> "$" + new Intl.NumberFormat("es-CO").format(n);
+
+  function el(html){
+    const t=document.createElement('template');
+    t.innerHTML=html.trim();
+    return t.content.firstChild;
+  }
+
+  function renderBottomNavMaybe(){
+    if(state.role !== "USER") return "";
+    const inUser = [Screen.U_HOME, Screen.U_HISTORY, Screen.U_PROFILE, Screen.U_CATALOGO, Screen.U_PRODUCTO, Screen.U_CONFIRM, Screen.U_QR, Screen.U_QR_REDEEM].includes(state.screen);
+    if(!inUser) return "";
+    const active = (id)=> state.screen===id ? "navBtn active" : "navBtn";
+    return `
+      <div class="bottomNav">
+        <button class="${active(Screen.U_HOME)}" onclick="nav('${Screen.U_HOME}')">Home</button>
+        <button class="${active(Screen.U_HISTORY)}" onclick="nav('${Screen.U_HISTORY}')">Historial</button>
+        <button class="${active(Screen.U_PROFILE)}" onclick="nav('${Screen.U_PROFILE}')">Perfil</button>
+      </div>
+    `;
+  }
+
+  function phoneShell(innerHtml){
+    return `
+      <div class="phoneWrap">
+        <div class="phone">
+          <div class="screen">
+            <div class="statusbar">
+              <div>9:41</div>
+              <div class="statusicons">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <div class="wifi"></div><div class="bar"></div>
+              </div>
+            </div>
+            <div class="screenBody">${innerHtml}</div>
+            ${renderBottomNavMaybe()}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function headerMobile(title, subtitle, backTo){
+    return `
+      <div class="hRow">
+        <div>
+          <div class="title1">${title}</div>
+          ${subtitle ? `<div class="sub1">${subtitle}</div>` : ``}
+        </div>
+        ${backTo ? `<div class="iconBtn" onclick="nav('${backTo}')">←</div>` : `<div class="iconBtn" onclick="toast('Notificaciones (mock)')">🔔</div>`}
+      </div>
+    `;
+  }
+
+  function allyCard(name,cat){
+    return `
+      <div class="card" style="padding:12px">
+        <div class="hRow">
+          <div class="row">
+            <div class="thumb" style="width:40px;height:40px;border-radius:14px">${name[0]}</div>
+            <div>
+              <div style="font-weight:900;font-size:13px">${name}</div>
+              <div class="mutedText">${cat}</div>
+            </div>
+          </div>
+          <div style="font-size:18px;color:var(--sub)">›</div>
+        </div>
+      </div>
+    `;
+  }
+  function productRow(name,pts,com){
+    return `
+      <div class="card" style="cursor:pointer" onclick="nav('${Screen.U_PRODUCTO}')">
+        <div class="hRow">
+          <div class="row">
+            <div class="thumb">🎁</div>
+            <div>
+              <div style="font-weight:950">${name}</div>
+              <div class="mutedText">${com}</div>
+            </div>
+          </div>
+          <div class="pillTag">${fmt(pts)} pts</div>
+        </div>
+      </div>
+      <div class="sp12"></div>
+    `;
+  }
+  function historyRow(type,delta,who,when,positive){
+    return `
+      <div class="card">
+        <div class="hRow">
+          <div>
+            <div style="font-weight:950">${type}</div>
+            <div class="mutedText">${who} · ${when}</div>
+          </div>
+          <div class="${positive?'ok':'bad'}">${delta}</div>
+        </div>
+      </div>
+      <div class="sp12"></div>
+    `;
+  }
+  function settingRow(t,s){
+    return `
+      <div class="listRow" style="cursor:pointer" onclick="toast('${t} (mock)')">
+        <div>
+          <div style="font-weight:900">${t}</div>
+          <div class="mutedText">${s}</div>
+        </div>
+        <div style="color:var(--sub);font-size:18px">›</div>
+      </div>
+    `;
+  }
+
+  // ===== USER =====
+  function screenUser(){
+    switch(state.screen){
+      case Screen.U_LOGIN:
+        return phoneShell(`
+          ${headerMobile("Iniciar sesión","Acceso Usuario", null)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="label">Correo</div>
+            <div class="card muted" style="padding:12px;margin-top:8px">jhondar@email.com</div>
+            <div class="sp12"></div>
+            <div class="label">Contraseña</div>
+            <div class="card muted" style="padding:12px;margin-top:8px">••••••••</div>
+            <div class="sp16"></div>
+            <button class="btn primary" onclick="nav('${Screen.U_HOME}')">Entrar</button>
+            <div class="sp12"></div>
+            <button class="btn ghost" onclick="toast('Recuperación (mock)')">¿Olvidaste tu contraseña?</button>
+          </div>
+        `);
+
+      case Screen.U_HOME:
+        return phoneShell(`
+          <div class="hRow">
+            <div>
+              <div class="title1">Hola, ${mock.user.name}</div>
+              <div class="sub1">Bienvenido a Ciclo</div>
+            </div>
+            <div class="iconBtn" onclick="toast('Notificaciones (mock)')">🔔</div>
+          </div>
+          <div class="sp16"></div>
+
+          <div class="card">
+            <div class="label">Saldo disponible</div>
+            <div class="hRow" style="margin-top:6px">
+              <div class="numBig">${fmt(mock.user.points)} <span style="font-size:14px;font-weight:850;color:var(--sub)">puntos</span></div>
+              <div class="pillTag">Wallet</div>
+            </div>
+            <div class="sp12"></div>
+            <button class="btn primary" onclick="nav('${Screen.U_QR}')">Generar QR</button>
+          </div>
+
+          <div class="sp12"></div>
+<div class="card soft ad-banner" style="padding:18px;">
+  
+  <!-- Etiqueta patrocinado -->
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="label" style="color:var(--green);font-weight:900;font-size:12px;letter-spacing:0.5px;">
+      ALIADO PATROCINADO
+    </div>
+    <div style="font-size:11px;color:var(--muted);">
+      Publicidad
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="hRow" style="margin-top:12px;align-items:center;">
+    
+    <div style="flex:1;">
+      <div style="font-weight:950;font-size:17px;">
+        ${mock.commerce.name}
+      </div>
+      <div class="mutedText" style="margin-top:4px;">
+        20% descuento en productos ecológicos
+      </div>
+    </div>
+
+    <button 
+      class="btn secondary" 
+      style="width:auto;height:40px;padding:0 16px;font-weight:600;"
+      onclick="toast('Abrir anuncio (mock)')">
+      Ver más
+    </button>
+
+  </div>
+
+</div>
+
+
+          <div class="sp12"></div>
+          <div class="hRow">
+            <div style="font-weight:950">Aliados destacados</div>
+            <div class="mutedText" onclick="toast('Ver todos (mock)')" style="cursor:pointer">Ver todos →</div>
+          </div>
+          <div class="sp12"></div>
+          <div class="grid2">
+            ${allyCard("EcoMarket","Alimentos")}
+            ${allyCard("BioStyle","Moda")}
+            ${allyCard("GreenTech","Accesorios")}
+            ${allyCard("Café Circular","Bebidas")}
+          </div>
+
+          <div class="sp12"></div>
+          <div class="card muted" style="cursor:pointer" onclick="nav('${Screen.U_CATALOGO}')">
+            <div class="hRow">
+              <div>
+                <div style="font-weight:950">Explorar catálogo</div>
+                <div class="mutedText">Redime recompensas con tus puntos</div>
+              </div>
+              <div style="font-size:18px">›</div>
+            </div>
+          </div>
+        `);
+
+      case Screen.U_QR:
+        return phoneShell(`
+          ${headerMobile("Generar QR","Preséntalo en el Punto Ciclo", Screen.U_HOME)}
+          <div class="sp16"></div>
+          <div class="card muted">
+            <div class="label">Saldo actual</div>
+            <div class="numMid" style="color:var(--green)">${fmt(mock.user.points)} puntos</div>
+          </div>
+          <div class="sp12"></div>
+          <div class="card">
+            <div class="qr"></div>
+            <div class="hRow">
+              <div class="mutedText">Expira en:</div>
+              <div class="pillTag">00:45</div>
+            </div>
+            <div class="sp12"></div>
+            <div class="mutedText">Código único válido por 60 segundos.</div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn secondary" onclick="toast('QR cancelado (mock)'); nav('${Screen.U_HOME}')">Cancelar</button>
+        `);
+
+      case Screen.U_CATALOGO:
+        return phoneShell(`
+          ${headerMobile("Catálogo","Recompensas disponibles", Screen.U_HOME)}
+          <div class="sp16"></div>
+          <div class="card muted">
+            <div class="hRow">
+              <div class="mutedText">Buscar…</div>
+              <div class="pillTag">Filtros</div>
+            </div>
+          </div>
+          <div class="sp12"></div>
+          ${productRow("Kit Ecológico Premium",1200,mock.commerce.name)}
+          ${productRow("Termo reutilizable",800,"EcoMarket")}
+          ${productRow("Camiseta reciclada",1500,"BioStyle")}
+          <div class="sp12"></div>
+          <div class="card soft">
+            <div class="label" style="color:var(--green);font-weight:850">Publicidad</div>
+            <div style="font-weight:950;margin-top:4px">Anuncio rotativo — Aliados Ciclo</div>
+            <div class="mutedText">Tu compra apoya el reciclaje local.</div>
+          </div>
+        `);
+
+      case Screen.U_PRODUCTO:
+        return phoneShell(`
+          ${headerMobile("Detalle del producto","", Screen.U_CATALOGO)}
+          <div class="sp16"></div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div style="height:180px;background:linear-gradient(135deg, rgba(27,94,32,.18), rgba(46,125,50,.12));display:flex;align-items:center;justify-content:center">
+              <div class="thumb" style="width:76px;height:76px;border-radius:22px;font-size:28px">♻</div>
+            </div>
+            <div style="padding:14px">
+              <div style="font-weight:950;font-size:18px">Kit Ecológico Premium</div>
+              <div class="mutedText">Comercio: ${mock.commerce.name}</div>
+              <div class="sp12"></div>
+              <div class="numMid" style="color:var(--green)">${fmt(1200)} puntos</div>
+              <div class="sp12"></div>
+              <div class="mutedText">Bolsa ecológica + termo metálico + libreta reciclada.</div>
+              <div class="sp12"></div>
+              <div class="card soft" style="padding:12px">
+                <div class="pillTag">Aliado Ciclo · ${mock.commerce.level}</div>
+                <div class="mutedText" style="margin-top:6px">Este aliado contribuye al compromiso socioambiental y recibe visibilidad en la app.</div>
+              </div>
+              <div class="sp12"></div>
+              <button class="btn primary" onclick="nav('${Screen.U_CONFIRM}')">Redimir producto</button>
+            </div>
+          </div>
+        `);
+
+      case Screen.U_CONFIRM:
+        const after = mock.user.points - 1200;
+        return phoneShell(`
+          ${headerMobile("Confirmar redención","Revisa los saldos", Screen.U_PRODUCTO)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="hRow">
+              <div class="row">
+                <div class="thumb">🛍</div>
+                <div>
+                  <div style="font-weight:950">Kit Ecológico Premium</div>
+                  <div class="mutedText">${mock.commerce.name}</div>
+                </div>
+              </div>
+              <div class="pillTag">${fmt(1200)} pts</div>
+            </div>
+            <div class="hr"></div>
+            <div class="listRow"><div class="mutedText">Saldo actual</div><div style="font-weight:900">${fmt(mock.user.points)} pts</div></div>
+            <div class="listRow"><div class="mutedText">Saldo después</div><div style="font-weight:900;color:var(--green)">${fmt(after)} pts</div></div>
+            <div class="sp12"></div>
+            <div class="mutedText">La operación se registrará en el sistema.</div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.U_QR_REDEEM}')">Generar QR de redención</button>
+        `);
+
+      case Screen.U_QR_REDEEM:
+        return phoneShell(`
+          ${headerMobile("QR de redención","Muéstralo al comercio aliado", Screen.U_CONFIRM)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="hRow">
+              <div class="row">
+                <div class="thumb">🎁</div>
+                <div>
+                  <div style="font-weight:950">Kit Ecológico Premium</div>
+                  <div class="mutedText">Comercio: ${mock.commerce.name}</div>
+                </div>
+              </div>
+              <div class="pillTag">${fmt(1200)} pts</div>
+            </div>
+          </div>
+          <div class="sp12"></div>
+          <div class="card">
+            <div class="qr"></div>
+            <div class="hRow">
+              <div class="mutedText">Expira en:</div>
+              <div class="pillTag">00:45</div>
+            </div>
+            <div class="sp12"></div>
+            <div class="mutedText">Código único generado para esta redención.</div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn secondary" onclick="toast('Redención cancelada (mock)'); nav('${Screen.U_HOME}')">Cancelar redención</button>
+        `);
+
+      case Screen.U_HISTORY:
+        return phoneShell(`
+          ${headerMobile("Historial","Movimientos recientes", null)}
+          <div class="sp16"></div>
+          ${historyRow("Reciclaje", "+506 pts", "Punto Verde Eco", "Hoy 10:15", true)}
+          ${historyRow("Redención", "-1200 pts", mock.commerce.name, "Hoy 12:10", false)}
+          ${historyRow("Reciclaje", "+350 pts", "Punto Norte", "Ayer 16:40", true)}
+          <div class="sp12"></div>
+          <div class="card muted"><div class="mutedText">Tip: En producción, esta lista se alimenta del ledger (transacciones).</div></div>
+        `);
+
+      case Screen.U_PROFILE:
+        return phoneShell(`
+          ${headerMobile("Perfil","Cuenta y seguridad", null)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="row">
+              <div class="thumb">👤</div>
+              <div class="grow">
+                <div style="font-weight:950">${mock.user.name} Darío</div>
+                <div class="mutedText">jhondar@email.com</div>
+              </div>
+              <div class="pillTag">Usuario</div>
+            </div>
+            <div class="hr"></div>
+            ${settingRow("Mis datos","Actualizar información")}
+            ${settingRow("Seguridad","Cambiar contraseña")}
+            ${settingRow("Soporte","PQRS / Ayuda")}
+          </div>
+          <div class="sp12"></div>
+          <button class="btn ghost" onclick="nav('${Screen.U_LOGIN}')">Cerrar sesión</button>
+        `);
+    }
+  }
+
+  // ===== PUNTO =====
+  function matLine(name, kg, ratio){
+    return `
+      <div class="listRow">
+        <div>
+          <div style="font-weight:900">${name}</div>
+          <div class="mutedText">${kg} kg · ${ratio} pts/kg</div>
+        </div>
+        <div class="pillTag">${fmt(Math.round(kg*ratio))} pts</div>
+      </div>
+    `;
+  }
+  function calcRow(name, calc, pts){
+    return `
+      <div class="listRow">
+        <div>
+          <div style="font-weight:900">${name}</div>
+          <div class="mutedText">${calc}</div>
+        </div>
+        <div style="font-weight:950;color:var(--green)">${fmt(pts)} pts</div>
+      </div>
+    `;
+  }
+
+  function screenPunto(){
+    switch(state.screen){
+      case Screen.P_LOGIN:
+        return phoneShell(`
+          ${headerMobile("Iniciar sesión","Panel Operador Punto Ciclo", null)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="label">Usuario operador</div>
+            <div class="card muted" style="padding:12px;margin-top:8px">operador@ciclo.com</div>
+            <div class="sp12"></div>
+            <div class="label">Contraseña</div>
+            <div class="card muted" style="padding:12px;margin-top:8px">••••••••</div>
+            <div class="sp16"></div>
+            <button class="btn primary" onclick="nav('${Screen.P_DASH}')">Entrar</button>
+          </div>
+        `);
+
+      case Screen.P_DASH:
+        return phoneShell(`
+          ${headerMobile("Punto Ciclo","${mock.punto.name}", null)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="label">Saldo disponible</div>
+            <div class="numBig">${fmt(mock.punto.points)} <span style="font-size:14px;font-weight:850;color:var(--sub)">puntos</span></div>
+            <div class="sp12"></div>
+            <div class="grid2">
+              <div class="card muted" style="padding:12px">
+                <div class="label">Reciclaje hoy</div>
+                <div class="numMid">${mock.punto.todayKg} kg</div>
+              </div>
+              <div class="card muted" style="padding:12px">
+                <div class="label">Operaciones</div>
+                <div class="numMid">18</div>
+              </div>
+            </div>
+          </div>
+          <div class="sp12"></div>
+          <div class="grid2">
+            <button class="btn primary" onclick="nav('${Screen.P_SCAN}')">Escanear QR</button>
+            <button class="btn secondary" onclick="nav('${Screen.P_REGISTER}')">Registrar reciclaje</button>
+          </div>
+          <div class="sp12"></div>
+          <div class="card">
+            <div style="font-weight:950">Actividad reciente</div>
+            <div class="sp12"></div>
+            <div class="listRow"><div class="mutedText">Juan Pérez</div><div class="ok">+506</div></div>
+            <div class="listRow"><div class="mutedText">Ana Gómez</div><div class="ok">+350</div></div>
+            <div class="sp12"></div>
+            <button class="btn ghost" onclick="nav('${Screen.P_HISTORY}')">Ver historial</button>
+          </div>
+        `);
+
+      case Screen.P_SCAN:
+        return phoneShell(`
+          ${headerMobile("Escanear QR","Escanea el código del usuario", Screen.P_DASH)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div style="height:260px;border-radius:18px;background:linear-gradient(180deg,#0B0F14,#111827);border:1px solid rgba(255,255,255,.10);position:relative;display:flex;align-items:center;justify-content:center">
+              <div style="width:220px;height:220px;border:2px solid rgba(46,125,50,.55);border-radius:18px;position:relative"></div>
+              <div style="position:absolute;bottom:12px;left:12px;right:12px;color:rgba(255,255,255,.70);font-size:12px;text-align:center">Alinea el código dentro del marco</div>
+            </div>
+            <div class="sp12"></div>
+            <button class="btn primary" onclick="nav('${Screen.P_VALIDATE}')">Simular lectura exitosa</button>
+          </div>
+        `);
+
+      case Screen.P_VALIDATE:
+        return phoneShell(`
+          ${headerMobile("Validar usuario","Confirmación previa", Screen.P_SCAN)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="row">
+              <div class="thumb">👤</div>
+              <div class="grow">
+                <div style="font-weight:950">Juan Pérez</div>
+                <div class="mutedText">juan@email.com</div>
+              </div>
+              <div class="chip ok">Código válido</div>
+            </div>
+            <div class="hr"></div>
+            <div class="listRow"><div class="mutedText">Saldo usuario</div><div style="font-weight:900">${fmt(mock.user.points)} pts</div></div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.P_REGISTER}')">Continuar</button>
+        `);
+
+      case Screen.P_REGISTER:
+        return phoneShell(`
+          ${headerMobile("Registrar reciclaje","Clasifica y pesa materiales", Screen.P_VALIDATE)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div style="font-weight:950">Detalle por material</div>
+            <div class="sp12"></div>
+            ${matLine("Cartón", 1.2, mock.ratios.carton)}
+            ${matLine("Plástico", 2.5, mock.ratios.plastico)}
+            ${matLine("Vidrio", 1.0, mock.ratios.vidrio)}
+            <div class="sp12"></div>
+            <div class="mutedText">Los puntos se calculan según la tabla de conversión del sistema.</div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.P_CONVERT}')">Confirmar conversión</button>
+        `);
+
+      case Screen.P_CONVERT:
+        const pCart = Math.round(1.2 * mock.ratios.carton);
+        const pPlas = Math.round(2.5 * mock.ratios.plastico);
+        const pVid  = Math.round(1.0 * mock.ratios.vidrio);
+        const total = pCart + pPlas + pVid;
+        return phoneShell(`
+          ${headerMobile("Confirmar conversión","Liquidación detallada", Screen.P_REGISTER)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div style="font-weight:950">Resumen de materiales</div>
+            <div class="sp12"></div>
+            ${calcRow("Cartón", "1.2 kg × "+mock.ratios.carton, pCart)}
+            ${calcRow("Plástico", "2.5 kg × "+mock.ratios.plastico, pPlas)}
+            ${calcRow("Vidrio", "1.0 kg × "+mock.ratios.vidrio, pVid)}
+            <div class="hr"></div>
+            <div class="hRow">
+              <div>
+                <div class="label">Total a transferir</div>
+                <div class="numMid" style="color:var(--green)">${fmt(total)} puntos</div>
+              </div>
+              <div class="pillTag">Ledger</div>
+            </div>
+          </div>
+          <div class="sp12"></div>
+          <div class="card muted">
+            <div class="label">Usuario destino</div>
+            <div style="font-weight:950">Juan Pérez</div>
+            <div class="sp12"></div>
+            <div class="listRow"><div class="mutedText">Saldo actual</div><div style="font-weight:900">${fmt(mock.user.points)} pts</div></div>
+            <div class="listRow"><div class="mutedText">Saldo después</div><div style="font-weight:900;color:var(--green)">${fmt(mock.user.points + total)} pts</div></div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.P_SUCCESS}')">Generar transferencia</button>
+        `);
+
+      case Screen.P_SUCCESS:
+        return phoneShell(`
+          ${headerMobile("Operación exitosa","Transferencia registrada", Screen.P_DASH)}
+          <div class="sp16"></div>
+          <div class="card" style="text-align:center">
+            <div style="width:86px;height:86px;border-radius:26px;background:rgba(232,245,233,.95);border:1px solid rgba(27,94,32,.18);display:grid;place-items:center;margin:10px auto 14px;color:var(--green);font-size:34px;font-weight:950">✓</div>
+            <div style="font-weight:950;font-size:16px">Reciclaje registrado correctamente</div>
+            <div class="sp12"></div>
+            <div class="numMid" style="color:var(--green)">+506 puntos asignados</div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.P_DASH}')">Volver al dashboard</button>
+        `);
+
+      case Screen.P_HISTORY:
+        return phoneShell(`
+          ${headerMobile("Historial Punto Ciclo","Operaciones recientes", Screen.P_DASH)}
+          <div class="sp16"></div>
+          ${historyRow("Reciclaje", "+506 pts", "Juan Pérez", "Hoy 10:15", true)}
+          ${historyRow("Reciclaje", "+350 pts", "Ana Gómez", "Hoy 09:40", true)}
+          ${historyRow("Ajuste", "+120 pts", "Admin", "Ayer 18:02", true)}
+        `);
+
+      case Screen.P_PROFILE:
+        return phoneShell(`
+          ${headerMobile("Perfil operador","Configuración", Screen.P_DASH)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="row">
+              <div class="thumb">🧑‍🔧</div>
+              <div class="grow">
+                <div style="font-weight:950">Operador Punto Ciclo</div>
+                <div class="mutedText">operador@ciclo.com</div>
+              </div>
+              <div class="pillTag">Punto Ciclo</div>
+            </div>
+            <div class="hr"></div>
+            ${settingRow("Centro asignado", mock.punto.name)}
+            ${settingRow("Horario", "Ver turnos")}
+            ${settingRow("Soporte", "Reportar incidente")}
+          </div>
+        `);
+    }
+  }
+
+  // ===== COMMERCE =====
+  function tile(t,s,ico,to){
+    return `
+      <div class="menuTile" onclick="nav('${to}')">
+        <div class="hRow">
+          <div class="ico">${ico}</div>
+          <div style="font-size:18px;color:var(--sub)">›</div>
+        </div>
+        <div>
+          <div class="t">${t}</div>
+          <div class="s">${s}</div>
+        </div>
+      </div>
+    `;
+  }
+  function prodAdminRow(name,pts,stock){
+    return `
+      <div class="card">
+        <div class="hRow">
+          <div class="row">
+            <div class="thumb">🎁</div>
+            <div>
+              <div style="font-weight:950">${name}</div>
+              <div class="mutedText">${fmt(pts)} pts · Stock ${stock}</div>
+            </div>
+          </div>
+          <div class="pillTag">Editar</div>
+        </div>
+      </div>
+      <div class="sp12"></div>
+    `;
+  }
+  function adRow(name,status,imp,clk){
+    const chipClass = status==="ACTIVO" ? "chip ok" : "chip info";
+    return `
+      <div class="card">
+        <div class="hRow">
+          <div>
+            <div style="font-weight:950">${name}</div>
+            <div class="mutedText">Impresiones ${fmt(imp)} · Clicks ${fmt(clk)}</div>
+          </div>
+          <span class="${chipClass}">${status}</span>
+        </div>
+      </div>
+      <div class="sp12"></div>
+    `;
+  }
+  function statCard(t,v){
+    return `
+      <div class="card">
+        <div class="label">${t}</div>
+        <div class="numMid" style="color:var(--green)">${v}</div>
+      </div>
+    `;
+  }
+  function field(label,value){
+    return `
+      <div class="label">${label}</div>
+      <div class="card muted" style="padding:12px;margin-top:8px">${value}</div>
+      <div class="sp12"></div>
+    `;
+  }
+
+  function screenCommerce(){
+    switch(state.screen){
+      case Screen.C_LOGIN:
+        return phoneShell(`
+          ${headerMobile("Iniciar sesión","Panel Comercio Aliado", null)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="label">Correo</div>
+            <div class="card muted" style="padding:12px;margin-top:8px">comercio@ciclo.com</div>
+            <div class="sp12"></div>
+            <div class="label">Contraseña</div>
+            <div class="card muted" style="padding:12px;margin-top:8px">••••••••</div>
+            <div class="sp16"></div>
+            <button class="btn primary" onclick="nav('${Screen.C_DASH}')">Entrar</button>
+          </div>
+        `);
+
+      case Screen.C_DASH:
+        return phoneShell(`
+          <div class="drawerHeader">
+            <div class="row">
+              <div class="thumb">🏪</div>
+              <div>
+                <div style="font-weight:950">${mock.commerce.name}</div>
+                <div class="mutedText">Nivel publicidad: ${mock.commerce.level}</div>
+              </div>
+            </div>
+            <div class="pillTag">${fmt(mock.commerce.points)} pts</div>
+          </div>
+
+          <div class="drawerMenu">
+            ${tile("Escanear","Redención", "QR", Screen.C_SCAN)}
+            ${tile("Productos","Stock", "🛍", Screen.C_PRODUCTS)}
+            ${tile("Publicidad","Anuncios", "📢", Screen.C_ADS)}
+            ${tile("Estadísticas","KPIs", "📈", Screen.C_STATS)}
+          </div>
+
+          <div class="sp12"></div>
+          <div class="card">
+            <div style="font-weight:950">Actividad reciente</div>
+            <div class="sp12"></div>
+            <div class="listRow"><div class="mutedText">Kit Eco Premium</div><div class="bad">-1200</div></div>
+            <div class="listRow"><div class="mutedText">Termo reutilizable</div><div class="bad">-800</div></div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn ghost" onclick="nav('${Screen.C_PROFILE}')">Perfil del comercio</button>
+        `);
+
+      case Screen.C_SCAN:
+        return phoneShell(`
+          ${headerMobile("Escanear redención","Escanea el código del cliente", Screen.C_DASH)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div style="height:260px;border-radius:18px;background:linear-gradient(180deg,#0B0F14,#111827);border:1px solid rgba(255,255,255,.10);position:relative;display:flex;align-items:center;justify-content:center">
+              <div style="width:220px;height:220px;border:2px solid rgba(46,125,50,.55);border-radius:18px;position:relative"></div>
+              <div style="position:absolute;bottom:12px;left:12px;right:12px;color:rgba(255,255,255,.70);font-size:12px;text-align:center">Alinea el código dentro del marco</div>
+            </div>
+            <div class="sp12"></div>
+            <button class="btn primary" onclick="nav('${Screen.C_VALIDATE}')">Simular lectura exitosa</button>
+          </div>
+        `);
+
+      case Screen.C_VALIDATE:
+        return phoneShell(`
+          ${headerMobile("Validar redención","Revisa los datos antes de confirmar", Screen.C_SCAN)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="row">
+              <div class="thumb">👤</div>
+              <div class="grow">
+                <div style="font-weight:950">Usuario</div>
+                <div class="mutedText">Juan Pérez <span class="ok">✓ Activo</span></div>
+              </div>
+            </div>
+            <div class="sp12"></div>
+            <div class="card muted">
+              <div class="row">
+                <div class="thumb">🎁</div>
+                <div class="grow">
+                  <div style="font-weight:950">Kit Ecológico Premium</div>
+                  <div class="mutedText">Costo: ${fmt(1200)} puntos</div>
+                </div>
+              </div>
+            </div>
+            <div class="sp12"></div>
+            <div class="card">
+              <div style="font-weight:950">Validación financiera</div>
+              <div class="sp12"></div>
+              <div class="listRow"><div class="mutedText">Saldo usuario</div><div class="ok">${fmt(2556)} pts ✓</div></div>
+              <div class="listRow"><div class="mutedText">Saldo comercio</div><div class="ok">${fmt(mock.commerce.points)} pts ✓</div></div>
+            </div>
+            <div class="sp12"></div>
+            <button class="btn primary" onclick="nav('${Screen.C_SUCCESS}')">Confirmar entrega</button>
+            <div class="sp12"></div>
+            <div class="mutedText">Al confirmar, los puntos serán descontados.</div>
+          </div>
+        `);
+
+      case Screen.C_SUCCESS:
+        return phoneShell(`
+          ${headerMobile("Entrega confirmada","Transacción completada", Screen.C_DASH)}
+          <div class="sp16"></div>
+          <div class="card" style="text-align:center">
+            <div style="width:86px;height:86px;border-radius:26px;background:rgba(232,245,233,.95);border:1px solid rgba(27,94,32,.18);display:grid;place-items:center;margin:10px auto 14px;color:var(--green);font-size:34px;font-weight:950">✓</div>
+            <div class="mutedText">Producto entregado</div>
+            <div style="font-weight:950;font-size:16px;margin-top:4px">Kit Ecológico Premium</div>
+            <div class="sp12"></div>
+            <div class="bad" style="font-size:16px">-1,200 puntos</div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.C_DASH}')">Volver al dashboard</button>
+        `);
+
+      case Screen.C_PRODUCTS:
+        return phoneShell(`
+          ${headerMobile("Productos","Gestión de recompensas", Screen.C_DASH)}
+          <div class="sp16"></div>
+          <button class="btn primary" onclick="nav('${Screen.C_PRODUCT_NEW}')">+ Crear producto</button>
+          <div class="sp12"></div>
+          ${prodAdminRow("Kit Ecológico Premium",1200,10)}
+          ${prodAdminRow("Termo reutilizable",800,5)}
+          ${prodAdminRow("Bolsa eco",400,22)}
+        `);
+
+      case Screen.C_PRODUCT_NEW:
+        return phoneShell(`
+          ${headerMobile("Crear producto","Alta de recompensa", Screen.C_PRODUCTS)}
+          <div class="sp16"></div>
+          <div class="card">
+            ${field("Nombre","Kit Ecológico Premium")}
+            ${field("Descripción","Bolsa + termo + libreta")}
+            ${field("Puntos requeridos","1200")}
+            ${field("Stock inicial","10")}
+            <button class="btn primary" onclick="toast('Producto guardado (mock)'); nav('${Screen.C_PRODUCTS}')">Guardar</button>
+          </div>
+        `);
+
+      case Screen.C_ADS:
+        return phoneShell(`
+          ${headerMobile("Publicidad","Anuncios y campañas", Screen.C_DASH)}
+          <div class="sp16"></div>
+          <div class="card soft">
+            <div class="hRow">
+              <div>
+                <div class="label" style="color:var(--green);font-weight:850">Nivel actual</div>
+                <div style="font-weight:950;font-size:16px">${mock.commerce.level}</div>
+                <div class="mutedText">Visibilidad incluida por aporte en mercancía.</div>
+              </div>
+              <div class="pillTag">Aliado</div>
+            </div>
+          </div>
+          <div class="sp12"></div>
+          <button class="btn primary" onclick="nav('${Screen.C_AD_NEW}')">+ Crear anuncio</button>
+          <div class="sp12"></div>
+          ${adRow("Banner Home","ACTIVO",3250,210)}
+          ${adRow("Aliados destacados","PENDIENTE",0,0)}
+        `);
+
+      case Screen.C_AD_NEW:
+        return phoneShell(`
+          ${headerMobile("Crear anuncio","Envío a aprobación", Screen.C_ADS)}
+          <div class="sp16"></div>
+          <div class="card">
+            ${field("Título","20% descuento en productos ecológicos")}
+            ${field("Descripción","Válido hasta agotar existencias")}
+            ${field("Ubicación","Home (Banner)")}
+            ${field("Duración","7 días")}
+            <div class="card muted">
+              <div class="listRow"><div class="mutedText">Costo estimado</div><div class="pillTag">2,000 pts</div></div>
+              <div class="mutedText">En MVP: costo en puntos / o incluido por nivel.</div>
+            </div>
+            <div class="sp12"></div>
+            <button class="btn primary" onclick="toast('Enviado a aprobación (mock)'); nav('${Screen.C_ADS}')">Enviar</button>
+          </div>
+        `);
+
+      case Screen.C_STATS:
+        return phoneShell(`
+          ${headerMobile("Estadísticas","Rendimiento del comercio", Screen.C_DASH)}
+          <div class="sp16"></div>
+          <div class="grid2">
+            ${statCard("Impresiones", "3,250")}
+            ${statCard("Clicks", "210")}
+            ${statCard("Redenciones", "8")}
+            ${statCard("Productos activos", "3")}
+          </div>
+          <div class="sp12"></div>
+          <div class="card">
+            <div style="font-weight:950">Top producto</div>
+            <div class="sp12"></div>
+            <div class="row">
+              <div class="thumb">🏆</div>
+              <div class="grow">
+                <div style="font-weight:950">Kit Eco Premium</div>
+                <div class="mutedText">Más redimido esta semana</div>
+              </div>
+              <div class="pillTag">8</div>
+            </div>
+          </div>
+        `);
+
+      case Screen.C_PROFILE:
+        return phoneShell(`
+          ${headerMobile("Perfil comercio","Información del aliado", Screen.C_DASH)}
+          <div class="sp16"></div>
+          <div class="card">
+            <div class="row">
+              <div class="thumb">🏪</div>
+              <div class="grow">
+                <div style="font-weight:950">${mock.commerce.name}</div>
+                <div class="mutedText">Calle 10 # 5-20 · Popayán</div>
+              </div>
+              <div class="pillTag">${mock.commerce.level}</div>
+            </div>
+            <div class="hr"></div>
+            ${settingRow("Saldo", fmt(mock.commerce.points)+" pts")}
+            ${settingRow("Aporte en mercancía", money(1000000))}
+            ${settingRow("Contacto", "300 000 0000")}
+          </div>
+          <div class="sp12"></div>
+          <button class="btn ghost" onclick="nav('${Screen.C_LOGIN}')">Cerrar sesión</button>
+        `);
+    }
+  }
+
+  // ===== ADMIN =====
+  function webKpi(t,v){ return `<div class="webCard"><div class="t">${t}</div><div class="v">${v}</div></div>`; }
+  function ledgerRow(id,type,from,to,pts,date,status,kind){
+    const chipKind = kind==="ok" ? "chip ok" : (kind==="bad" ? "chip bad" : "chip info");
+    return `
+      <div class="trow">
+        <div style="font-weight:900">${id}</div>
+        <div><span class="chip">${type}</span></div>
+        <div>${from}</div>
+        <div>${to}</div>
+        <div style="font-weight:950">${pts}</div>
+        <div>${date}</div>
+        <div><span class="${chipKind}">${status}</span></div>
+      </div>
+    `;
+  }
+  function adminTable(rows, headers=["ID","Rol","Nombre","Estado","Saldo (pts)","Extra"]){
+    const head = `
+      <div class="table" style="margin-top:14px">
+        <div class="trow head" style="grid-template-columns: 140px 110px 1fr 140px 140px 160px 120px;">
+          <div>${headers[0]}</div><div>${headers[1]}</div><div>${headers[2]}</div><div>${headers[3]}</div><div>${headers[4]}</div><div>${headers[5]}</div><div>Acción</div>
+        </div>
+    `;
+    const body = rows.map(r=>{
+      const [id,rol,nombre,estado,saldo,extra,kind] = r;
+      const chipKind = kind==="ok" ? "chip ok" : (kind==="bad" ? "chip bad" : "chip info");
+      return `
+        <div class="trow" style="grid-template-columns: 140px 110px 1fr 140px 140px 160px 120px;">
+          <div style="font-weight:900">${id}</div>
+          <div><span class="chip">${rol}</span></div>
+          <div>${nombre}</div>
+          <div><span class="${chipKind}">${estado}</span></div>
+          <div style="font-weight:950">${saldo}</div>
+          <div>${extra}</div>
+          <div><span class="chip info" style="cursor:pointer" onclick="toast('Abrir detalle (mock)')">Ver</span></div>
+        </div>
+      `;
+    }).join("");
+    return head + body + "</div>";
+  }
+  function settingBlock(t,v){
+    return `
+      <div style="border:1px solid rgba(229,231,235,.9);border-radius:16px;padding:12px;background:#fff">
+        <div class="t">${t}</div>
+        <div style="font-weight:950;font-size:16px;margin-top:4px">${v}</div>
+      </div>
+    `;
+  }
+
+  function screenTitleAdmin(){
+    const map = {
+      [Screen.A_DASH]:"Dashboard Global",
+      [Screen.A_USERS]:"Gestión de Usuarios",
+      [Screen.A_PUNTOS]:"Gestión de Puntos Ciclo",
+      [Screen.A_COMMERCE]:"Gestión de Comercios",
+      [Screen.A_LEDGER]:"Ledger de Transacciones",
+      [Screen.A_ADS]:"Gestión de Publicidad",
+      [Screen.A_SETTINGS]:"Reglas del Sistema",
+      [Screen.A_LOGS]:"Auditoría y Seguridad"
+    };
+    return map[state.screen] || "CICLO Admin";
+  }
+
+  function renderAdminBody(){
+    if(state.screen === Screen.A_DASH){
+      return `
+        <div class="webGrid">
+          ${webKpi("Usuarios activos","1,245")}
+          ${webKpi("Puntos en circulación","450,000")}
+          ${webKpi("Reciclaje (mes)","3,280 kg")}
+          ${webKpi("Redenciones (mes)","412")}
+        </div>
+        <div class="table" style="margin-top:14px">
+          <div class="trow head">
+            <div>ID</div><div>Tipo</div><div>Origen</div><div>Destino</div><div>Puntos</div><div>Fecha</div><div>Estado</div>
+          </div>
+          ${ledgerRow("#0001","RECICLAJE","Punto Verde Eco","Juan Pérez","+506","2026-02-14 10:15","CONFIRMED","ok")}
+          ${ledgerRow("#0002","REDENCIÓN","Juan Pérez","Tienda Verde Eco","-1200","2026-02-14 12:10","CONFIRMED","ok")}
+          ${ledgerRow("#0003","ASIGNACIÓN","Admin","Punto Norte","+5000","2026-02-13 08:40","CONFIRMED","ok")}
+        </div>
+      `;
+    }
+    if(state.screen === Screen.A_USERS){
+      return adminTable([
+        ["#U-1021","Usuario","Jhon Darío","Activo","3,756","2026-02-10","ok"],
+        ["#U-0993","Usuario","Ana Gómez","Activo","1,420","2026-02-11","ok"],
+        ["#U-0771","Comercio","Tienda Verde Eco","Activo","97,600","2026-02-01","ok"],
+        ["#U-0330","Punto","Punto Verde Eco","Activo","2,300","2026-01-28","ok"],
+      ]);
+    }
+    if(state.screen === Screen.A_PUNTOS){
+      return adminTable([
+        ["#P-001","Punto","Punto Verde Eco","Activo","2,300","120 kg","ok"],
+        ["#P-002","Punto","Punto Norte","Activo","8,500","98 kg","ok"],
+        ["#P-003","Punto","Punto Sur","Suspendido","0","0 kg","bad"],
+      ], ["ID","Tipo","Nombre","Estado","Saldo (pts)","Hoy"]);
+    }
+    if(state.screen === Screen.A_COMMERCE){
+      return adminTable([
+        ["#C-010","Comercio","Tienda Verde Eco","Activo","97,600","INTERMEDIO","ok"],
+        ["#C-011","Comercio","EcoMarket","Activo","45,200","BÁSICO","ok"],
+        ["#C-012","Comercio","BioStyle","Pendiente","0","—","info"],
+      ], ["ID","Tipo","Nombre","Estado","Saldo (pts)","Nivel"]);
+    }
+    if(state.screen === Screen.A_LEDGER){
+      return `
+        <div class="webGrid" style="grid-template-columns:repeat(3,1fr)">
+          ${webKpi("Entradas (7d)","+18,420")}
+          ${webKpi("Salidas (7d)","-12,600")}
+          ${webKpi("Alertas","2")}
+        </div>
+        <div class="table">
+          <div class="trow head">
+            <div>ID</div><div>Tipo</div><div>Origen</div><div>Destino</div><div>Puntos</div><div>Fecha</div><div>Estado</div>
+          </div>
+          ${ledgerRow("#0007","RECICLAJE","Punto Norte","Ana Gómez","+350","2026-02-14 09:40","CONFIRMED","ok")}
+          ${ledgerRow("#0008","REDENCIÓN","Ana Gómez","EcoMarket","-800","2026-02-14 11:02","PENDING","info")}
+          ${ledgerRow("#0009","AJUSTE","Admin","Punto Sur","+1000","2026-02-12 15:18","CANCELLED","bad")}
+          ${ledgerRow("#0010","PUBLICIDAD","Tienda Verde Eco","CICLO","-2000","2026-02-12 10:05","CONFIRMED","ok")}
+        </div>
+      `;
+    }
+    if(state.screen === Screen.A_ADS){
+      return adminTable([
+        ["#AD-01","Banner Home","Tienda Verde Eco","Activo","3,250","210","ok"],
+        ["#AD-02","Aliados Destacados","BioStyle","Pendiente","0","0","info"],
+        ["#AD-03","Push Promo","EcoMarket","Rechazado","—","—","bad"],
+      ], ["ID","Tipo","Comercio","Estado","Impresiones","Clicks"]);
+    }
+    if(state.screen === Screen.A_SETTINGS){
+      return `
+        <div class="webGrid" style="grid-template-columns:repeat(2,1fr)">
+          <div class="webCard">
+            <div class="t">Ratio puntos/kg (Cartón)</div>
+            <div class="v">${mock.ratios.carton}</div>
+            <div class="t" style="margin-top:10px">Ratio puntos/kg (Plástico)</div>
+            <div class="v">${mock.ratios.plastico}</div>
+          </div>
+          <div class="webCard">
+            <div class="t">Ratio puntos/kg (Vidrio)</div>
+            <div class="v">${mock.ratios.vidrio}</div>
+            <div class="t" style="margin-top:10px">Límite diario (usuario)</div>
+            <div class="v">10,000 pts</div>
+          </div>
+        </div>
+        <div class="webCard" style="margin-top:12px">
+          <div style="font-weight:900">Reglas del sistema</div>
+          <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            ${settingBlock("Expiración QR","60s")}
+            ${settingBlock("Validación","Backend obligatorio")}
+            ${settingBlock("Transacciones","Mongo + transacciones")}
+            ${settingBlock("Auditoría","Logs + alertas")}
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn primary" style="width:auto" onclick="toast('Reglas guardadas (mock)')">Guardar cambios</button>
+          </div>
+        </div>
+      `;
+    }
+    if(state.screen === Screen.A_LOGS){
+      return `
+        <div class="webCard" style="margin-top:14px">
+          <div style="font-weight:900">Eventos recientes</div>
+          <div class="sp12"></div>
+          <div class="listRow"><div>Intentos fallidos de login (Comercio)</div><span class="chip bad">ALERTA</span></div>
+          <div class="listRow"><div>Redención pendiente &gt; 30 min</div><span class="chip info">REVISAR</span></div>
+          <div class="listRow"><div>Asignación manual de saldo a Punto Norte</div><span class="chip ok">OK</span></div>
+        </div>
+      `;
+    }
+    return `<div class="webCard" style="margin-top:14px">Pantalla en construcción</div>`;
+  }
+
+  function screenAdmin(){
+    const links = [
+      ["Dashboard", Screen.A_DASH],
+      ["Usuarios", Screen.A_USERS],
+      ["Puntos Ciclo", Screen.A_PUNTOS],
+      ["Comercios", Screen.A_COMMERCE],
+      ["Transacciones", Screen.A_LEDGER],
+      ["Publicidad", Screen.A_ADS],
+      ["Configuración", Screen.A_SETTINGS],
+      ["Auditoría", Screen.A_LOGS],
+    ];
+
+    if(state.screen === Screen.A_LOGIN){
+      return `
+        <div class="webWrap">
+          <div class="web" style="grid-template-columns:1fr">
+            <div class="webMain" style="max-width:520px;margin:0 auto">
+              <div class="webTop">
+                <div class="h">Admin · Iniciar sesión</div>
+                <div class="chip info">WEB</div>
+              </div>
+              <div class="sp16"></div>
+              <div class="webCard">
+                <div class="t">Correo</div>
+                <div style="margin-top:6px;padding:12px;border:1px solid rgba(229,231,235,.9);border-radius:14px;background:#fff">admin@ciclo.com</div>
+                <div class="sp12"></div>
+                <div class="t">Contraseña</div>
+                <div style="margin-top:6px;padding:12px;border:1px solid rgba(229,231,235,.9);border-radius:14px;background:#fff">••••••••</div>
+                <div class="sp16"></div>
+                <button class="btn primary" style="width:100%" onclick="nav('${Screen.A_DASH}')">Entrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const side = `
+      <div class="sidebar">
+        <div class="sideBrand">
+          <div class="logo">C</div>
+          <div>
+            CICLO ADMIN
+            <div style="opacity:.75;font-size:12px;font-weight:650;margin-top:2px">Control · Ledger · Publicidad</div>
+          </div>
+        </div>
+        <div class="sideNav">
+          ${links.map(([t,id])=>`<div class="sideLink ${state.screen===id?'active':''}" onclick="nav('${id}')">${t}</div>`).join("")}
+          <div class="sideLink" style="margin-top:10px" onclick="nav('${Screen.A_LOGIN}')">Cerrar sesión</div>
+        </div>
+      </div>
+    `;
+
+    const top = `
+      <div class="webTop">
+        <div class="h">${screenTitleAdmin()}</div>
+        <div class="search">🔎 <input placeholder="Buscar en el sistema (mock)" /></div>
+        <div class="chip info">Admin</div>
+      </div>
+    `;
+
+    const main = `<div class="webMain">${top}${renderAdminBody()}</div>`;
+    return `<div class="webWrap"><div class="web">${side}${main}</div></div>`;
+  }
+
+  // ===== Guide/Stage =====
+  function renderRoleSwitch(){
+    const wrap = document.getElementById("roleSwitch");
+    wrap.innerHTML = "";
+    Object.entries(Roles).forEach(([k,label])=>{
+      const b = el(`<div class="pill ${state.role===k?'active':''}">${label}</div>`);
+      b.onclick = ()=>{
+        state.role = k;
+        state.screen = defaultScreenForRole(k);
+        renderAll();
+      };
+      wrap.appendChild(b);
+    });
+  }
+
+  function defaultScreenForRole(role){
+    if(role==="USER") return Screen.U_HOME;
+    if(role==="PUNTO") return Screen.P_DASH;
+    if(role==="COMMERCE") return Screen.C_DASH;
+    if(role==="ADMIN") return Screen.A_DASH;
+    return Screen.U_HOME;
+  }
+
+  function renderKpis(){
+    const elK = document.getElementById("kpis");
+    const kpiSet = {
+      USER: [["Saldo", fmt(mock.user.points)+" pts"],["Aliados","12"]],
+      PUNTO: [["Saldo", fmt(mock.punto.points)+" pts"],["Hoy", mock.punto.todayKg+" kg"]],
+      COMMERCE: [["Saldo", fmt(mock.commerce.points)+" pts"],["Nivel Ads", mock.commerce.level]],
+      ADMIN: [["Usuarios","1,245"],["Puntos","450,000"]],
+    }[state.role];
+    elK.innerHTML = kpiSet.map(([t,v])=>`
+      <div class="kpi"><div class="t">${t}</div><div class="v">${v}</div></div>
+    `).join("");
+  }
+
+  function renderScreenList(){
+    const list = document.getElementById("screenList");
+    list.innerHTML = "";
+    const arr = screensByRole[state.role];
+    arr.forEach(s=>{
+      const node = el(`
+        <div class="item ${state.screen===s.id?'active':''}">
+          <div class="title">${s.t}</div>
+          <div class="desc">${s.d}</div>
+        </div>
+      `);
+      node.onclick = ()=>{ nav(s.id); };
+      list.appendChild(node);
+    });
+  }
+
+  function renderStage(){
+    const stage = document.getElementById("stage");
+    let html="";
+    if(state.role==="USER"){ html = screenUser(); }
+    if(state.role==="PUNTO"){ html = screenPunto(); }
+    if(state.role==="COMMERCE"){ html = screenCommerce(); }
+    if(state.role==="ADMIN"){ html = screenAdmin(); }
+    stage.innerHTML = html;
+  }
+
+  window.nav = function(screenId){ state.screen = screenId; renderAll(); }
+
+  let toastTimer = null;
+  function toast(msg){
+    clearTimeout(toastTimer);
+    let t = document.getElementById("toast");
+    if(!t){
+      t = document.createElement("div");
+      t.id="toast";
+      t.style.position="fixed";
+      t.style.left="50%";
+      t.style.bottom="20px";
+      t.style.transform="translateX(-50%)";
+      t.style.padding="10px 12px";
+      t.style.borderRadius="14px";
+      t.style.background="rgba(17,24,39,.92)";
+      t.style.color="#fff";
+      t.style.fontSize="12px";
+      t.style.boxShadow="0 14px 40px rgba(17,24,39,.35)";
+      t.style.zIndex="9999";
+      t.style.maxWidth="92%";
+      t.style.textAlign="center";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity="1";
+    toastTimer = setTimeout(()=>{t.style.opacity="0";}, 1700);
+  }
+  window.toast = toast;
+
+  function renderAll(){
+    renderRoleSwitch();
+    renderKpis();
+    renderScreenList();
+    renderStage();
+  }
+
+  function init(){ state.role="USER"; state.screen=Screen.U_HOME; renderAll(); }
+  init();
+</script>
+</body>
+</html>
